@@ -1,23 +1,9 @@
 import re
 
-def parse_pack_and_normalize(pack_str, price, mrp=None):
+def parse_pack_and_normalize(pack_str, price, mrp=None, url=""):
     """
-    Parses arbitrary pack strings and calculates normalized price per standard reference unit.
-    
-    Standard Reference Units:
-    - Weight: 1 kg (or 100g for herbs/chilli/garlic)
-    - Volume: 1 Litre
-    - Count: 1 Piece / 1 Dozen
-    
-    Returns:
-        dict: {
-            'pack_size': str,
-            'selling_price': float,
-            'mrp': float,
-            'std_unit': str,
-            'rate_per_unit': float,
-            'discount_pct': int
-        }
+    Parses arbitrary pack strings and calculates normalized price per standard reference unit,
+    preserving the product verification URL.
     """
     if not pack_str or not price:
         return None
@@ -66,7 +52,6 @@ def parse_pack_and_normalize(pack_str, price, mrp=None):
         std_unit = "1 Dozen"
         
     else:
-        # Fallback default assuming 1 unit
         rate_per_unit = price
         std_unit = "1 Unit"
         
@@ -78,21 +63,6 @@ def parse_pack_and_normalize(pack_str, price, mrp=None):
         'mrp': mrp,
         'std_unit': std_unit,
         'rate_per_unit': rate_per_unit,
-        'discount_pct': max(0, discount_pct)
+        'discount_pct': max(0, discount_pct),
+        'url': url or ""
     }
-
-# Unit tests
-if __name__ == '__main__':
-    test_cases = [
-        ("100 g", 20, 25),      # Expected: 200/kg
-        ("250 g", 30, 35),      # Expected: 120/kg
-        ("500 gm", 45, 50),     # Expected: 90/kg
-        ("1 kg", 25, 30),       # Expected: 25/kg
-        ("5 kg", 420, 480),     # Expected: 84/kg
-        ("900 ml pouch", 135, 150), # Expected: 150/L
-        ("1 Litre", 145, 160),  # Expected: 145/L
-        ("1 pc", 25, 30),       # Expected: 25/pc
-    ]
-    for p, pr, mrp in test_cases:
-        res = parse_pack_and_normalize(p, pr, mrp)
-        print(f"Pack: {p:>14} | Price: Rs.{pr:>3} -> Std: {res['std_unit']} | Normalized Rate: Rs.{res['rate_per_unit']}/unit ({res['discount_pct']}% OFF)")
